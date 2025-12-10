@@ -6,16 +6,33 @@
 /*   By: ypellegr <ypellegr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 11:52:16 by ypellegr          #+#    #+#             */
-/*   Updated: 2025/12/08 12:10:39 by ypellegr         ###   ########.fr       */
+/*   Updated: 2025/12/10 14:19:32 by ypellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../philo.h"
 
-int check_args(int ac, char **av, )
+int	args_eror(char **av)
 {
-	int i;
-	int j;
+	if (ft_atoi(av[1]) <= 0 || ft_atoi(av[2]) <= 0 || ft_atoi(av[3]) <= 0
+		|| ft_atoi(av[4]) <= 0)
+	{
+		write(2, "Error: Number of philosophers must be greater than 0.\n", 55);
+		return (1);
+	}
+	else if (ft_atoi(av[1]) > 200)
+	{
+		write(2,
+			"Error: Number of philosophers must be less than or equal to 200.\n",
+			66);
+		return (1);
+	}
+}
+
+int	check_args(int ac, char **av)
+{
+	int	i;
+	int	j;
 
 	i = 1;
 	while (i < ac)
@@ -32,24 +49,62 @@ int check_args(int ac, char **av, )
 		}
 		i++;
 	}
-	if (ft_atoi(av[1]) <= 0 || ft_atoi(av[2]) <= 0 || ft_atoi(av[3]) <= 0 || ft_atoi(av[4]) <= 0)
-	{
-		write(2, "Error: Number of philosophers must be greater than 0.\n", 55);
+	if (args_eror(av) == 1)
 		return (1);
-	} else if (ft_atoi(av[1]) > 200)
+	return (0);
+}
+
+int initialize_philosophers(t_program *program, int ac, char **av)
+{
+	int i;
+
+	i = 0;
+	while (i != ft_atoi(av[1]))
 	{
-		write(2, "Error: Number of philosophers must be less than or equal to 200.\n", 66);
-		return (1);
+		program->philos[i].id = i + 1;
+		program->philos[i].time_to_die = ft_atoi(av[2]);
+		program->philos[i].time_to_eat = ft_atoi(av[3]);
+		program->philos[i].time_to_sleep = ft_atoi(av[4]);
+		program->philos[i].num_of_philos = ft_atoi(av[1]);
+		program->philos[i].meals_eaten = 0;
+		program->philos[i].eating = 0;
+		program->philos[i].start_time = get_time();
+		program->philos[i].last_meal = program->philos[i].start_time;
+		program->philos[i].dead = &program->dead_flag;
+		program->philos[i].write_lock = &program->write_lock;
+		program->philos[i].dead_lock = &program->dead_lock;
+		program->philos[i].meal_lock = &program->meal_lock;
+		if (ac == 6)
+			program->philos[i].num_times_to_eat = ft_atoi(av[5]);
+		i++;
 	}
 	return (0);
 }
 
-int main(int ac, char **av)
+int ini
+
+int init_program(t_program *program, int ac, char **av)
 {
+	if (initialize_philosophers(program, ac, av) == 1)
+		return (1);
+	if (initialize_mutexes(program, ac, av) == 1)
+		return (1);
+	return (0);
+}
+
+int	main(int ac, char **av)
+{
+	t_program	program;
 	if (ac < 5 || ac > 6)
 	{
 		printf("Error: Invalid number of arguments.\n");
 		return (1);
 	}
-	
+	if (check_args(ac, av) == 1)
+		return (1);
+	if (init_program(&program, ac, av) == 1)
+		return (1);
+	if (start_simulation(&program) == 1)
+		return (1);
+	return (0);
 }
