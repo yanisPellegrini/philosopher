@@ -6,7 +6,7 @@
 /*   By: ypellegr <ypellegr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 11:52:16 by ypellegr          #+#    #+#             */
-/*   Updated: 2025/12/10 14:19:32 by ypellegr         ###   ########.fr       */
+/*   Updated: 2025/12/11 09:42:21 by ypellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ int	check_args(int ac, char **av)
 	return (0);
 }
 
-int initialize_philosophers(t_program *program, int ac, char **av)
+int init_philo(t_program *program, int ac, char **av)
 {
 	int i;
 
@@ -81,13 +81,35 @@ int initialize_philosophers(t_program *program, int ac, char **av)
 	return (0);
 }
 
-int ini
+int init_mutexs(t_program *program, int ac, char **av)
+{
+	int i;
+
+	i = 0;
+	while (i != ft_atoi(av[1]))
+	{
+		if (pthread_mutex_init(&program->philos[i].l_fork, NULL) != 0)
+			return (1);
+		if (i == ft_atoi(av[1]) - 1)
+			program->philos[i].r_fork = &program->philos[0].l_fork;
+		else
+			program->philos[i].r_fork = &program->philos[i + 1].l_fork;
+		i++;
+	}
+	if (pthread_mutex_init(&program->dead_lock, NULL) != 0)
+		return (1);
+	if (pthread_mutex_init(&program->meal_lock, NULL) != 0)
+		return (1);
+	if (pthread_mutex_init(&program->write_lock, NULL) != 0)
+		return (1);
+	return (0);
+}
 
 int init_program(t_program *program, int ac, char **av)
 {
-	if (initialize_philosophers(program, ac, av) == 1)
+	if (init_philo(program, ac, av) == 1)
 		return (1);
-	if (initialize_mutexes(program, ac, av) == 1)
+	if (init_mutexes(program, ac, av) == 1)
 		return (1);
 	return (0);
 }
