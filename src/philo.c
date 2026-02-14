@@ -3,130 +3,142 @@
 /*                                                        :::      ::::::::   */
 /*   philo.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ypellegr <ypellegr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yanis <yanis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 11:52:16 by ypellegr          #+#    #+#             */
-/*   Updated: 2025/12/11 09:42:21 by ypellegr         ###   ########.fr       */
+/*   Updated: 2026/02/13 21:37:16 by yanis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../philo.h"
 
-int	args_eror(char **av)
+/* ************************************************************************** */
+/*   is_number - Vérifie qu'une string ne contient que des chiffres         */
+/*   Retourne 1 si c'est un nombre valide, 0 sinon                          */
+/* ************************************************************************** */
+
+static int	is_number(char *str)
 {
-	if (ft_atoi(av[1]) <= 0 || ft_atoi(av[2]) <= 0 || ft_atoi(av[3]) <= 0
-		|| ft_atoi(av[4]) <= 0)
+	int	i;
+
+	i = 0;
+	if (str[i] == '+')
+		i++;
+	if (str[i] == '\0')
+		return (0);
+	while (str[i])
 	{
-		write(2, "Error: Number of philosophers must be greater than 0.\n", 55);
-		return (1);
+		if (str[i] < '0' || str[i] > '9')
+			return (0);
+		i++;
 	}
-	else if (ft_atoi(av[1]) > 200)
-	{
-		write(2,
-			"Error: Number of philosophers must be less than or equal to 200.\n",
-			66);
-		return (1);
-	}
+	return (1);
 }
+
+/* ************************************************************************** */
+/*   check_args - Validation complète des arguments                         */
+/*   1. Vérifie que tous les arguments sont des nombres                     */
+/*   2. Vérifie que number_of_philosophers > 0 et <= 200                    */
+/*   3. Vérifie que time_to_die, time_to_eat, time_to_sleep > 0            */
+/* ************************************************************************** */
 
 int	check_args(int ac, char **av)
 {
 	int	i;
-	int	j;
 
+	if (ac < 5 || ac > 6)
+	{
+		printf("Error: Invalid number of arguments\n");
+		printf("Usage: ./philo nb_philos time_die time_eat time_sleep ");
+		printf("[nb_must_eat]\n");
+		return (1);
+	}
 	i = 1;
 	while (i < ac)
 	{
-		j = 0;
-		while (av[i][j])
+		if (!is_number(av[i]))
 		{
-			if (av[i][j] < '0' || av[i][j] > '9')
-			{
-				write(2, "Error: Invalid argument '", 25);
-				return (1);
-			}
-			j++;
+			printf("Error: Invalid argument '%s' (must be a positive number)\n",
+				av[i]);
+			return (1);
 		}
 		i++;
 	}
-	if (args_eror(av) == 1)
-		return (1);
-	return (0);
-}
-
-int init_philo(t_program *program, int ac, char **av)
-{
-	int i;
-
-	i = 0;
-	while (i != ft_atoi(av[1]))
+	if (ft_atoi(av[1]) <= 0 || ft_atoi(av[1]) > 200)
 	{
-		program->philos[i].id = i + 1;
-		program->philos[i].time_to_die = ft_atoi(av[2]);
-		program->philos[i].time_to_eat = ft_atoi(av[3]);
-		program->philos[i].time_to_sleep = ft_atoi(av[4]);
-		program->philos[i].num_of_philos = ft_atoi(av[1]);
-		program->philos[i].meals_eaten = 0;
-		program->philos[i].eating = 0;
-		program->philos[i].start_time = get_time();
-		program->philos[i].last_meal = program->philos[i].start_time;
-		program->philos[i].dead = &program->dead_flag;
-		program->philos[i].write_lock = &program->write_lock;
-		program->philos[i].dead_lock = &program->dead_lock;
-		program->philos[i].meal_lock = &program->meal_lock;
-		if (ac == 6)
-			program->philos[i].num_times_to_eat = ft_atoi(av[5]);
-		i++;
+		printf("Error: Number of philosophers must be between 1 and 200\n");
+		return (1);
+	}
+	if (ft_atoi(av[2]) <= 0 || ft_atoi(av[3]) <= 0 || ft_atoi(av[4]) <= 0)
+	{
+		printf("Error: Time values must be greater than 0\n");
+		return (1);
+	}
+	if (ac == 6 && ft_atoi(av[5]) <= 0)
+	{
+		printf("Error: Number of meals must be greater than 0\n");
+		return (1);
 	}
 	return (0);
 }
 
-int init_mutexs(t_program *program, int ac, char **av)
+/* ************************************************************************** */
+/*   start_simulation - Lance tous les threads                              */
+/*   1. Crée un thread pour chaque philosophe                               */
+/*   2. Crée le thread de monitoring                                        */
+/*   3. Attend que tous les threads se terminent (join)                     */
+/* ************************************************************************** */
+
+int	start_simulation(t_program *program)
 {
-	int i;
+	int	i;
 
 	i = 0;
-	while (i != ft_atoi(av[1]))
+	while (i < program->num_philos)
 	{
-		if (pthread_mutex_init(&program->philos[i].l_fork, NULL) != 0)
+		if (pthread_create(&program->philos[i].thread, NULL,
+				philosopher_routine, &program->philos[i]) != 0)
 			return (1);
-		if (i == ft_atoi(av[1]) - 1)
-			program->philos[i].r_fork = &program->philos[0].l_fork;
-		else
-			program->philos[i].r_fork = &program->philos[i + 1].l_fork;
 		i++;
 	}
-	if (pthread_mutex_init(&program->dead_lock, NULL) != 0)
+	if (pthread_create(&program->monitor, NULL, monitor_routine, program) != 0)
 		return (1);
-	if (pthread_mutex_init(&program->meal_lock, NULL) != 0)
-		return (1);
-	if (pthread_mutex_init(&program->write_lock, NULL) != 0)
-		return (1);
+	i = 0;
+	while (i < program->num_philos)
+	{
+		pthread_join(program->philos[i].thread, NULL);
+		i++;
+	}
+	pthread_join(program->monitor, NULL);
 	return (0);
 }
 
-int init_program(t_program *program, int ac, char **av)
-{
-	if (init_philo(program, ac, av) == 1)
-		return (1);
-	if (init_mutexes(program, ac, av) == 1)
-		return (1);
-	return (0);
-}
+/* ************************************************************************** */
+/*   main - Point d'entrée du programme                                     */
+/*   1. Valide les arguments                                                */
+/*   2. Initialise le programme                                             */
+/*   3. Lance la simulation                                                 */
+/*   4. Nettoie la mémoire                                                  */
+/* ************************************************************************** */
 
 int	main(int ac, char **av)
 {
 	t_program	program;
-	if (ac < 5 || ac > 6)
+
+	if (check_args(ac, av) != 0)
+		return (1);
+	if (init_program(&program, ac, av) != 0)
 	{
-		printf("Error: Invalid number of arguments.\n");
+		printf("Error: Initialization failed\n");
 		return (1);
 	}
-	if (check_args(ac, av) == 1)
+	if (start_simulation(&program) != 0)
+	{
+		printf("Error: Simulation failed\n");
+		cleanup(&program);
 		return (1);
-	if (init_program(&program, ac, av) == 1)
-		return (1);
-	if (start_simulation(&program) == 1)
-		return (1);
+	}
+	cleanup(&program);
 	return (0);
 }
+
