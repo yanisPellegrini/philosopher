@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   uti.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yanis <yanis@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ypellegr <ypellegr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 20:58:43 by yanis             #+#    #+#             */
-/*   Updated: 2026/02/13 21:29:56 by yanis            ###   ########.fr       */
+/*   Updated: 2026/02/14 14:12:29 by ypellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,35 +37,34 @@ int	ft_atoi(const char *str)
 	return (result * sign);
 }
 
-size_t get_time(void)
+size_t	get_time(void)
 {
-    struct timeval time;
+	struct timeval	time;
 
-    gettimeofday(&time, NULL);
-    return ((time.tv_sec *1000) + (time.tv_usec / 1000));
+	gettimeofday(&time, NULL);
+	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
-void ft_usleep(size_t milliseconds)
+void	ft_usleep(size_t milliseconds)
 {
-    size_t start;
+	size_t	start;
 
-    start = get_time();
-    while((get_time() - start) < milliseconds)
-        usleep(500);
+	start = get_time();
+	while ((get_time() - start) < milliseconds)
+		usleep(500);
 }
 
-void print_status(t_philo *philo, char *status)
+void	print_status(t_philo *philo, char *status)
 {
-    size_t timestamp;
+	size_t	timestamp;
 
-    pthread_mutex_lock(philo->write_lock);
-    pthread_mutex_lock(philo->dead_lock);
-    if(*philo->dead_flag == 0)
-    {
-        timestamp = get_time() - philo->start_time;
-        printf("%zu %d %s\n", timestamp, philo->id, status);
-    }
-    pthread_mutex_unlock(philo->dead_lock);
-    pthread_mutex_unlock(philo->write_lock);
+	pthread_mutex_lock(philo->write_lock);
+	pthread_mutex_lock(philo->dead_lock);
+	if (*philo->dead_flag == 0)
+	{
+		timestamp = get_time() - philo->start_time;
+		printf("%zu %d %s\n", timestamp, philo->id, status);
+	}
+	pthread_mutex_unlock(philo->dead_lock);
+	pthread_mutex_unlock(philo->write_lock);
 }
-

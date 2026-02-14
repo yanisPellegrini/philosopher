@@ -3,21 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yanis <yanis@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ypellegr <ypellegr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 11:52:34 by ypellegr          #+#    #+#             */
-/*   Updated: 2026/02/13 22:40:34 by yanis            ###   ########.fr       */
+/*   Updated: 2026/02/14 13:46:15 by ypellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILO_H
 # define PHILO_H
 
+# include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
-# include <unistd.h>
-# include <pthread.h>
 # include <sys/time.h>
+# include <unistd.h>
 
 typedef struct s_philo
 {
@@ -43,8 +43,8 @@ typedef struct s_philo
 typedef struct s_program
 {
 	int				num_philos;
-	int 			dead_flag;
-	int 			all_ate_flag;
+	int				dead_flag;
+	int				all_ate_flag;
 	pthread_t		monitor;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	dead_lock;
@@ -53,63 +53,33 @@ typedef struct s_program
 	t_philo			*philos;
 }					t_program;
 
-
-/* ************************************************************************** */
-/*                           UTILS.C                                          */
-/* ************************************************************************** */
-
-int		ft_atoi(const char *str);
-size_t	get_time(void);
-void	ft_usleep(size_t milliseconds);
-void	print_status(t_philo *philo, char *status);
-
-/* ************************************************************************** */
-/*                           INIT.C                                           */
-/* ************************************************************************** */
-
-int		init_program(t_program *program, int ac, char **av);
-int		init_philos(t_program *program, char **av);
-int		init_mutexes(t_program *program);
-void	init_forks(t_program *program);
-
-/* ************************************************************************** */
-/*                           ROUTINE.C                                        */
-/* ************************************************************************** */
-
-void	*philosopher_routine(void *arg);
-void	take_forks(t_philo *philo);
-void	put_forks(t_philo *philo);
-
-/* ************************************************************************** */
-/*                           ACTIONS.C                                        */
-/* ************************************************************************** */
-
-void	eat(t_philo *philo);
-void	philo_sleep(t_philo *philo);
-void	think(t_philo *philo);
-
-/* ************************************************************************** */
-/*                           MONITOR.C                                        */
-/* ************************************************************************** */
-
-void	*monitor_routine(void *arg);
-int		check_death(t_philo *philo);
-int		check_all_ate(t_program *program);
-int		is_simulation_stopped(t_philo *philo);
-
-/* ************************************************************************** */
-/*                           CLEANUP.C                                        */
-/* ************************************************************************** */
-
-void	destroy_mutexes(t_program *program);
-void	cleanup(t_program *program);
-
-/* ************************************************************************** */
-/*                           MAIN.C                                           */
-/* ************************************************************************** */
-
-int		check_args(int ac, char **av);
-int		start_simulation(t_program *program);
-
+int					ft_atoi(const char *str);
+size_t				get_time(void);
+void				ft_usleep(size_t milliseconds);
+void				print_status(t_philo *philo, char *status);
+int					init_program(t_program *program, int ac, char **av);
+int					init_philos(t_program *program, char **av);
+int					init_mutexes(t_program *program);
+void				init_forks(t_program *program);
+void				*philosopher_routine(void *arg);
+void				take_forks(t_philo *philo);
+void				put_forks(t_philo *philo);
+void				eat(t_philo *philo);
+void				philo_sleep(t_philo *philo);
+void				think(t_philo *philo);
+void				*monitor_routine(void *arg);
+int					check_death(t_philo *philo);
+int					check_all_ate(t_program *program);
+int					is_simulation_stopped(t_philo *philo);
+void				destroy_mutexes(t_program *program);
+void				cleanup(t_program *program);
+int					check_args(int ac, char **av);
+int					check_arg_count(int ac);
+int					check_arg_format(int ac, char **av);
+int					check_arg_values(int ac, char **av);
+int					start_simulation(t_program *program);
+void				print_death(t_program *program, int i);
+int					check_philo(t_program *program);
+int					allocate_memory(t_program *program);
 
 #endif

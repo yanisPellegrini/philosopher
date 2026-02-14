@@ -8,6 +8,7 @@ SRCS_DIR	= src
 SRCS		= $(SRCS_DIR)/philo.c \
 			  $(SRCS_DIR)/init.c \
 			  $(SRCS_DIR)/uti.c \
+			  $(SRCS_DIR)/uti2.c \
 			  $(SRCS_DIR)/actions.c \
 			  $(SRCS_DIR)/routine.c \
 			  $(SRCS_DIR)/monitor.c \
